@@ -1,34 +1,36 @@
 import random 
 import csv 
 
-
-from models import *
+from  models import *
 
 pos_to_player = {1: "player1", 2: "player2", 3: "player3", 4: "player4", 5: "player5"}
 pos_to_num = {"player1": 1, "player2": 2, "player3": 3, "player4": 4, "player5": 5}
 
 
 def shooting(player, team): 
-    shot_type_value = 0
-    shot_chance_value = 0 
-    
+
+    shot_location = random.randint(0,45)
+    print (shot_location)
+    shot_location_chance = random.uniform(0,1)
+    print (shot_location_chance)
     result = None 
 
-    if player.three_chance > shot_type_value:
-        if player.three_point_pct > shot_chance_value:
-            team.points += 3
-            player.stats.points +=3
-            player.stats.three_points +=1
-            player.stats.three_point_attmpt +=1
+    if shot_location <= 5:
+        if player.less_than_5ft_shot_pct > shot_location_chance:
+            team.points +=2
+            player.stats.points +=2
+            player.stats.two_points +=1
+            player.stats.two_point_attmpt +=1
+            result = "make"
             ## we could out put play by play here
             results = "make"
         else:
-            player.stats.three_point_attmpt +=1
-            results = "miss"
+            player.stats.two_point_attmpt += 1 
+            result = "miss"   
 
 
-    else: 
-        if player.two_point_pct > shot_chance_value:
+    elif shot_location <= 9 and shot_location > 5: 
+        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
             team.points +=2
             player.stats.points +=2
             player.stats.two_points +=1
@@ -37,7 +39,51 @@ def shooting(player, team):
 
         else:
             player.stats.two_point_attmpt += 1 
-            result = "miss"   
+            result = "miss"  
+    elif shot_location <= 14 and shot_location > 9: 
+        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
+            team.points +=2
+            player.stats.points +=2
+            player.stats.two_points +=1
+            player.stats.two_point_attmpt +=1
+            result = "make"
+
+        else:
+            player.stats.two_point_attmpt += 1 
+            result = "miss" 
+    elif shot_location <= 19 and shot_location > 14: 
+        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
+            team.points +=2
+            player.stats.points +=2
+            player.stats.two_points +=1
+            player.stats.two_point_attmpt +=1
+            result = "make"
+
+        else:
+            player.stats.two_point_attmpt += 1 
+            result = "miss" 
+    elif shot_location <= 24 and shot_location > 19: 
+        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
+            team.points +=2
+            player.stats.points +=2
+            player.stats.two_points +=1
+            player.stats.two_point_attmpt +=1
+            result = "make"
+
+        else:
+            player.stats.two_point_attmpt += 1 
+            result = "miss" 
+    elif shot_location <= 9 and shot_location > 5: 
+        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
+            team.points +=2
+            player.stats.points +=2
+            player.stats.two_points +=1
+            player.stats.two_point_attmpt +=1
+            result = "make"
+
+        else:
+            player.stats.two_point_attmpt += 1 
+            result = "miss"    
 
     return result
 
@@ -104,6 +150,52 @@ def rebounding_sequence(team):
     return res
 
 
+def run_possession(possessing_team, clock):
+    passes = 1
+    player_name = possessing_team.getPlayerWithHighestUsgPercentage()
+    print (player_name)
+    possessing_player = possessing_team.teamlineup[player_name]
+    res = None
+    while passes < 5:
+        use_val = 0.0
+        if use_val < possessing_player.usage:
+            res = shooting(possessing_player, possessing_team)
+            break
+        else:
+            print("i am here")
+            new_player_pos =possessing_team.getRandomPlayer()
+            possessing_player = possessing_team.teamlineup[new_player_pos]
+            passes += 1
+    #hero ball time
+    if passes == 5:
+        use_val = round(random.random()*100)
+        if use_val < (possessing_player.usage+10):
+            res = shooting(possessing_player, possessing_team)
+        elif use_val < 70:
+            #These are tough 50/50 calls in the lane from hero-baller charging down it
+            foul_val = round(random.random()*100)
+            if foul_val < 50:
+                possessing_player.stats.turnovers += 1
+                possessing_player.stats.fouls += 1
+                possessing_team = possessing_team.opponent
+                possessing_team.fouls += 1
+            else:
+                possessing_team.opponent.fouls += 1
+                if possessing_team.opponent.fouls > 4:
+                    possessing_team = free_throw_sequence(possessing_player, possessing_team)
+                else:
+                    pass
+        else:
+            #turnover
+            possessing_player.stats.turnovers += 1
+            possessing_team = possessing_team.opponent
+    #resolve the clock
+    clock -= passes * 5
+    return possessing_team, clock
+
+
+
+
 
 
     #########################sim starting point 
@@ -145,9 +237,7 @@ def make_Team1players_from_data(team,playerID, path):
             p = Player()
             p.name, p.position = r[1], r[2]
             p.usage = float(r[3])
-            print (p.position)
-            team.teamlineup[p.position] = p
-            print (team.teamlineup)
+            team.teamlineup[p.name] = p
 
 
 
@@ -160,7 +250,9 @@ def make_Team2players_from_data(team, playerID, path):
             p = Player()
             p.name,  p.position = r[1], r[2]
             p.usage = float(r[3])
-            team.teamlineup[p.position] = p
+            team.teamlineup[p.name] = p
+
+
 
 make_Team1players_from_data(home ,team1PF, "player_data.csv")
 make_Team1players_from_data(home, team1SF, "player_data.csv")
@@ -169,11 +261,6 @@ make_Team1players_from_data(home,team1PG, "player_data.csv")
 make_Team1players_from_data(home, team1SG, "player_data.csv")
 
 
-make_Team2players_from_data(away,team2PF, "player_data.csv")
-make_Team2players_from_data(away, team2SF, "player_data.csv")
-make_Team2players_from_data(away, team2C, "player_data.csv")
-make_Team2players_from_data(away, team2PG, "player_data.csv")
-make_Team2players_from_data(away, team2SG, "player_data.csv")
 
 #print home.lineup
 #print away.lineup
@@ -187,6 +274,20 @@ if jump_val > 0.50:
     possessing_team = away
 else:
     possessing_team = home
+
+while quarter < 5:
+    clock_seconds = 720
+    while clock_seconds > 0:
+        possessing_team, clock_seconds = run_possession(possessing_team, clock_seconds)
+    home.fouls = 0
+    away.fouls = 0
+    home.quarter_points = home.points - home.running_points
+    away.quarter_points = away.points - away.running_points
+    home.running_points = home.points
+    away.running_points = away.points
+    home.points_in_a_quarter[quarter] = home.quarter_points
+    away.points_in_a_quarter[quarter] = away.quarter_points
+    quarter += 1
 
 
 

@@ -5,11 +5,27 @@ class Team:
 
     def __init__(self,name):
         self.name = name 
-        self.teamlineup = {"F":None, "F": None, "G":None , "G":None ,"C":None ,"C":None ,"G-F":None, "G-F":None, "F-C":None, "F-C":None, "C-F":None, "C-F":None , "F-C":None, "F-C":None ,"F-G":None , "F-G": None  }
+        self.teamlineup = { }
         self.points = 0
         self.running_points = 0
         self.fouls = 0
         self.points_in_a_quarter = {}
+        
+    def getPlayerWithHighestUsgPercentage(self):
+        max_usage = 0.0 
+        player_name = None
+        for k in self.teamlineup.keys():
+            p = self.teamlineup[k]
+            if (p.usage >max_usage):
+                max_usage = p.usage
+                player_name= p.name
+        return player_name
+
+
+    def getRandomPlayer(self):
+        player_name = random.choice(list(self.teamlineup.keys()))
+        return player_name
+
 
 
 class GameStats: 
