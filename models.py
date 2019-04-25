@@ -76,4 +76,5 @@ class Player:
         self.two_point_pct = 0.0
         self.three_chance = 0.0
         self.freethrow_pct = 0.0
+        self.shot_distances = None
         self.stats = GameStats()

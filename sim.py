@@ -1,7 +1,7 @@
 import random 
 import csv 
-
-from models import *
+import getshots
+from  models import *
 
 pos_to_player = {1: "player1", 2: "player2", 3: "player3", 4: "player4", 5: "player5"}
 pos_to_num = {"player1": 1, "player2": 2, "player3": 3, "player4": 4, "player5": 5}
@@ -9,26 +9,28 @@ pos_to_num = {"player1": 1, "player2": 2, "player3": 3, "player4": 4, "player5":
 
 def shooting(player, team): 
 
-    shot_location = random.randint(0,45)
-    shot_location_chance = random.uniform(0,1)
+    shot_location = random.choice(player.shot_distances)
+    print (shot_location)
+    
     result = None 
 
     if shot_location <= 5:
-        if player.less_than_5ft_shot_pct > shot_location_chance:
+        shot_made = True if random.randrange(100) <= player.less_than_5ft_shot_pct *100 else False
+        print('pct', player.less_than_5ft_shot_pct)
+        if shot_made:
             team.points +=2
             player.stats.points +=2
             player.stats.two_points +=1
             player.stats.two_point_attmpt +=1
             result = "make"
-            ## we could out put play by play here
-            results = "make"
         else:
             player.stats.two_point_attmpt += 1 
             result = "miss"   
-
+        print(result)
 
     elif shot_location <= 9 and shot_location > 5: 
-        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
+        shot_made = True if random.randrange(100) <= player.less_than_5ft_to_9ft_shot_pct *100 else False
+        if shot_made:
             team.points +=2
             player.stats.points +=2
             player.stats.two_points +=1
@@ -39,7 +41,8 @@ def shooting(player, team):
             player.stats.two_point_attmpt += 1 
             result = "miss"  
     elif shot_location <= 14 and shot_location > 9: 
-        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
+        shot_made = True if random.randrange(100) <= player.less_than_10ft_to_14ft_shot_pct *100 else False
+        if shot_made:
             team.points +=2
             player.stats.points +=2
             player.stats.two_points +=1
@@ -50,7 +53,8 @@ def shooting(player, team):
             player.stats.two_point_attmpt += 1 
             result = "miss" 
     elif shot_location <= 19 and shot_location > 14: 
-        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
+        shot_made = True if random.randrange(100) <= player.less_than_15ft_to_19ft_shot_pct *100 else False
+        if shot_made:
             team.points +=2
             player.stats.points +=2
             player.stats.two_points +=1
@@ -61,28 +65,75 @@ def shooting(player, team):
             player.stats.two_point_attmpt += 1 
             result = "miss" 
     elif shot_location <= 24 and shot_location > 19: 
-        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
+        shot_made = True if random.randrange(100) <= player.less_than_20ft_to_24ft_shot_pct *100 else False
+        if shot_made and shot_location > 23:
+            team.points +=3
+            player.stats.points +=3
+            player.stats.three_points +=1
+            player.stats.three_point_attmpt +=1
+            result = "make"
+        if(shot_made and shot_location < 23):
             team.points +=2
             player.stats.points +=2
             player.stats.two_points +=1
             player.stats.two_point_attmpt +=1
             result = "make"
-
-        else:
+        if not shot_made and shot_location < 23:
             player.stats.two_point_attmpt += 1 
             result = "miss" 
-    elif shot_location <= 9 and shot_location > 5: 
-        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
-            team.points +=2
-            player.stats.points +=2
-            player.stats.two_points +=1
-            player.stats.two_point_attmpt +=1
+        if not shot_made and shot_location >= 23:
+            player.stats.three_point_attmpt += 1 
+            result = "miss" 
+    elif shot_location <= 29 and shot_location > 24: 
+        shot_made = True if random.randrange(100) <= player.less_than_25ft_to_29ft_shot_pct *100 else False
+        if shot_made:
+            team.points +=3
+            player.stats.points +=3
+            player.stats.three_points +=1
+            player.stats.three_point_attmpt +=1
             result = "make"
 
         else:
-            player.stats.two_point_attmpt += 1 
+            player.stats.three_point_attmpt += 1 
             result = "miss"    
 
+    elif shot_location <= 34 and shot_location > 29: 
+        shot_made = True if random.randrange(100) <= player.less_than_30ft__to_34ft_shot_pct *100 else False
+        if shot_made:
+            team.points +=3
+            player.stats.points +=3
+            player.stats.three_points +=1
+            player.stats.three_point_attmpt +=1
+            result = "make"
+
+        else:
+            player.stats.three_point_attmpt += 1 
+            result = "miss"    
+
+    elif shot_location <= 39 and shot_location > 34: 
+        shot_made = True if random.randrange(100) <= player.less_than_35ft_to_39ft_shot_pct *100 else False
+        if shot_made:
+            team.points +=3
+            player.stats.points +=3
+            player.stats.three_points +=1
+            player.stats.three_point_attmpt +=1
+            result = "make"
+
+        else:
+            player.stats.three_point_attmpt += 1 
+            result = "miss"
+    elif shot_location >= 40: 
+        shot_made = True if random.randrange(100) <= player.less_than_40ftPlus_shot_pct *100 else False
+        if shot_made:
+            team.points +=3
+            player.stats.points +=3
+            player.stats.three_points +=1
+            player.stats.three_point_attmpt +=1
+            result = "make"
+
+        else:
+            player.stats.three_point_attmpt += 1 
+            result = "miss"        
     return result
 
 def freethrow_rebounding_sequence(player, team):
@@ -246,7 +297,16 @@ def make_Team1players_from_data(team,playerID, path):
             p = Player()
             p.name, p.position = r[1], r[2]
             p.usage = float(r[3])
-            p.REB = float(r[5])
+            p.less_than_5ft_shot_pct = float(r[8])
+            p.less_than_5ft_to_9ft_shot_pct = float(r[9])
+            p.less_than_10ft_to_14ft_shot_pct = float(r[10])
+            p.less_than_15ft_to_19ft_shot_pct = float(r[11])
+            p.less_than_20ft_to_24ft_shot_pct  = float(r[12])
+            p.less_than_25ft_to_29ft_shot_pct  = float(r[13])
+            p.less_than_30ft__to_34ft_shot_pct = float(r[14])
+            p.less_than_35ft_to_39ft_shot_pct  = float(r[15])
+            p.less_than_40ftPlus_shot_pct  = float(r[16])
+            p.shot_distances = getshots.shot_loc(r[0])
             team.teamlineup[p.name] = p
 
 
@@ -260,7 +320,16 @@ def make_Team2players_from_data(team, playerID, path):
             p = Player()
             p.name,  p.position = r[1], r[2]
             p.usage = float(r[3])
-            p.REB = float(r[5])
+            p.less_than_5ft_shot_pct = float(r[8])
+            p.less_than_5ft_to_9ft_shot_pct = float(r[9])
+            p.less_than_10ft_to_14ft_shot_pct = float(r[10])
+            p.less_than_15ft_to_19ft_shot_pct = float(r[11])
+            p.less_than_20ft_to_24ft_shot_pct  = float(r[12])
+            p.less_than_25ft_to_29ft_shot_pct  = float(r[13])
+            p.less_than_30ft__to_34ft_shot_pct = float(r[14])
+            p.less_than_35ft_to_39ft_shot_pct  = float(r[15])
+            p.less_than_40ftPlus_shot_pct  = float(r[16])
+            p.shot_distances = getshots.shot_loc(r[0])
             team.teamlineup[p.name] = p
 
 
