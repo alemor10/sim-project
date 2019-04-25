@@ -83,42 +83,7 @@ def shooting(player, team):
 
         else:
             player.stats.two_point_attmpt += 1 
-            result = "miss"  
-    elif shot_location <= 9 and shot_location > 5: 
-        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
-            team.points +=2
-            player.stats.points +=2
-            player.stats.two_points +=1
-            player.stats.two_point_attmpt +=1
-            result = "make"
-
-        else:
-            player.stats.two_point_attmpt += 1 
-            result = "miss"  
-
-    elif shot_location <= 9 and shot_location > 5: 
-        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
-            team.points +=2
-            player.stats.points +=2
-            player.stats.two_points +=1
-            player.stats.two_point_attmpt +=1
-            result = "make"
-
-        else:
-            player.stats.two_point_attmpt += 1 
-            result = "miss"  
-
-    elif shot_location >= 40: 
-        if player.less_than_5ft_to_9ft_shot_pct > shot_location_chance:
-            team.points +=2
-            player.stats.points +=2
-            player.stats.two_points +=1
-            player.stats.two_point_attmpt +=1
-            result = "make"
-
-        else:
-            player.stats.two_point_attmpt += 1 
-            result = "miss"     
+            result = "miss"    
 
     return result
 
