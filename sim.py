@@ -134,24 +134,21 @@ def free_throw_sequence(player, team, event_type = None):
 
 
 def rebounding_sequence(team):
-    rebound_val = round(random.random()*100)
-    #this is a little schematic to weight rebounding to right pos
-    rebound_range = [1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
-    rebounder = random.choice(rebound_range)
-    rebounding_pos = pos_to_player[rebounder]
-    if rebound_val < 26:
-        team.teamlineup[rebounding_pos].stats.oreb += 1
+    rebound_val = random.uniform(0,1)
+    
+    if rebound_val <= 0:
+       ## team.teamlineup[rebounding_pos].stats.oreb += 1
         res = "oreb"
     else:
-        team.opponent.teamlineup[rebounding_pos].stats.dreb += 1
+        ##team.opponent.teamlineup[rebounding_pos].stats.dreb += 1
         res = "dreb"
     return res
 
 
 def run_possession(possessing_team, clock):
     passes = 1
+    print(possessing_team.name)
     player_name = possessing_team.getPlayerWithHighestUsgPercentage()
-    print (player_name)
     possessing_player = possessing_team.teamlineup[player_name]
     res = None
     while passes < 5:
@@ -187,6 +184,20 @@ def run_possession(possessing_team, clock):
             #turnover
             possessing_player.stats.turnovers += 1
             possessing_team = possessing_team.opponent
+   #resolve the make or miss if there was a shot
+    if res != None:
+        if res == "make":
+            possessing_team = possessing_team.opponent
+        elif res == "miss":
+            reb_res = rebounding_sequence(possessing_team)
+            if reb_res == "oreb":
+                pass
+            elif reb_res == "dreb":
+                possessing_team = possessing_team.opponent
+            else:
+                print ("Received unknown rebound resolution")
+        else:
+            print ("Received unknown resolution")
     #resolve the clock
     clock -= passes * 5
     return possessing_team, clock
@@ -235,6 +246,7 @@ def make_Team1players_from_data(team,playerID, path):
             p = Player()
             p.name, p.position = r[1], r[2]
             p.usage = float(r[3])
+            p.REB = float(r[5])
             team.teamlineup[p.name] = p
 
 
@@ -248,6 +260,7 @@ def make_Team2players_from_data(team, playerID, path):
             p = Player()
             p.name,  p.position = r[1], r[2]
             p.usage = float(r[3])
+            p.REB = float(r[5])
             team.teamlineup[p.name] = p
 
 
@@ -257,6 +270,13 @@ make_Team1players_from_data(home, team1SF, "player_data.csv")
 make_Team1players_from_data(home,team1C, "player_data.csv")
 make_Team1players_from_data(home,team1PG, "player_data.csv")
 make_Team1players_from_data(home, team1SG, "player_data.csv")
+
+
+make_Team2players_from_data(away,team2PF, "player_data.csv")
+make_Team2players_from_data(away, team2SF, "player_data.csv")
+make_Team2players_from_data(away, team2C, "player_data.csv")
+make_Team2players_from_data(away, team2PG, "player_data.csv")
+make_Team2players_from_data(away, team2SG, "player_data.csv")
 
 
 

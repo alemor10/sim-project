@@ -21,11 +21,19 @@ class Team:
                 player_name= p.name
         return player_name
 
-
     def getRandomPlayer(self):
         player_name = random.choice(list(self.teamlineup.keys()))
         return player_name
 
+    def getPlayerWithHighestREBPercentage(self):
+        max_REB = 0.0 
+        player_name = None 
+        for k in self.teamlineup.keys():
+            p = self.teamlineup[k]
+            if (p.REB >max_REB):
+                max_REB = p.REB
+                player_name= p.name
+        return (player_name, max_REB)
 
 
 class GameStats: 
@@ -55,6 +63,7 @@ class Player:
         self.name = None
         self.position = None
         self.usage = 0.0
+        self.REB = 0.0
         self.less_than_5ft_shot_pct  = 0.0
         self.less_than_5ft_to_9ft_shot_pct  = 0.0
         self.less_than_10ft_to_14ft_shot_pct  = 0.0
