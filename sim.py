@@ -4,9 +4,8 @@ import csv
 
 from models import *
 
-
-pos_to_player = {1: "pg", 2: "sg", 3: "sf", 4: "pf", 5: "c"}
-pos_to_num = {"pg": 1, "sg": 2, "sf": 3, "pf": 4, "c": 5}
+pos_to_player = {1: "player1", 2: "player2", 3: "player3", 4: "player4", 5: "player5"}
+pos_to_num = {"player1": 1, "player2": 2, "player3": 3, "player4": 4, "player5": 5}
 
 
 def shooting(player, team): 
@@ -104,60 +103,6 @@ def rebounding_sequence(team):
         res = "dreb"
     return res
 
-def run_possession(possessing_team, clock):
-    passes = 1
-    possessing_player = possessing_team.teamlineup["pg"]
-    res = None
-    while passes < 5:
-        use_val = round(random.random()*100)
-        if use_val < possessing_player.usage:
-            res = shooting(possessing_player, possessing_team)
-            break
-        else:
-            new_player_val = random.randint(1, 5)
-            new_player_pos = pos_to_player[new_player_val]
-            possessing_player = possessing_team.teamlineup[new_player_pos]
-            passes += 1
-    #hero ball time
-    if passes == 5:
-        use_val = round(random.random()*100)
-        if use_val < (possessing_player.usage+10):
-            res = shooting(possessing_player, possessing_team)
-        elif use_val < 70:
-            #These are tough 50/50 calls in the lane from hero-baller charging down it
-            foul_val = round(random.random()*100)
-            if foul_val < 50:
-                possessing_player.stats.turnovers += 1
-                possessing_player.stats.fouls += 1
-                possessing_team = possessing_team.opponent
-                possessing_team.fouls += 1
-            else:
-                possessing_team.opponent.fouls += 1
-                if possessing_team.opponent.fouls > 4:
-                    possessing_team = free_throw_sequence(possessing_player, possessing_team)
-                else:
-                    pass
-        else:
-            #turnover
-            possessing_player.stats.turnovers += 1
-            possessing_team = possessing_team.opponent
-    #resolve the make or miss if there was a shot
-    if res != None:
-        if res == "make":
-            possessing_team = possessing_team.opponent
-        elif res == "miss":
-            reb_res = rebounding_sequence(possessing_team)
-            if reb_res == "oreb":
-                pass
-            elif reb_res == "dreb":
-                possessing_team = possessing_team.opponent
-            else:
-                print ("Received unknown rebound resolution")
-        else:
-            print ("Received unknown resolution")
-    #resolve the clock
-    clock -= passes * 5
-    return possessing_team, clock
 
 
 
@@ -177,9 +122,9 @@ team1PG = "200768"
 team1SG = "201980"
 
 ### hard coded team2
-team2PF= "200755"
-team2SF = "202699"
-team2C = "203954"
+team2PF= "200755" ## G
+team2SF = "202699" ## F
+team2C = "203954" ## 
 team2PG = "1627732"
 team2SG = "202710"
 
@@ -200,8 +145,11 @@ def make_Team1players_from_data(team,playerID, path):
             p = Player()
             p.name, p.position = r[1], r[2]
             p.usage = float(r[3])
-            print(p.usage, p.name , p.position)
+            print (p.position)
             team.teamlineup[p.position] = p
+            print (team.teamlineup)
+
+
 
 
 def make_Team2players_from_data(team, playerID, path):    
@@ -211,13 +159,11 @@ def make_Team2players_from_data(team, playerID, path):
         if  r[0]==playerID in r:
             p = Player()
             p.name,  p.position = r[1], r[2]
-
             p.usage = float(r[3])
-            print(p.usage, p.name , p.position)
             team.teamlineup[p.position] = p
 
 make_Team1players_from_data(home ,team1PF, "player_data.csv")
-make_Team1players_from_data(home,team1SF, "player_data.csv")
+make_Team1players_from_data(home, team1SF, "player_data.csv")
 make_Team1players_from_data(home,team1C, "player_data.csv")
 make_Team1players_from_data(home,team1PG, "player_data.csv")
 make_Team1players_from_data(home, team1SG, "player_data.csv")
@@ -242,19 +188,7 @@ if jump_val > 0.50:
 else:
     possessing_team = home
 
-while quarter < 5:
-    clock_seconds = 720
-    while clock_seconds > 0:
-        possessing_team, clock_seconds = run_possession(possessing_team, clock_seconds)
-    home.fouls = 0
-    away.fouls = 0
-    home.quarter_points = home.points - home.running_points
-    away.quarter_points = away.points - away.running_points
-    home.running_points = home.points
-    away.running_points = away.points
-    home.points_by_quarter[quarter] = home.quarter_points
-    away.points_by_quarter[quarter] = away.quarter_points
-    quarter += 1
+
 
 for t in teams:
     print (t.name, t.points, t.points_in_a_quarter)
