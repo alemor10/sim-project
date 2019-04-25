@@ -1,7 +1,7 @@
 import random 
 import csv 
 
-from  models import *
+from models import *
 
 pos_to_player = {1: "player1", 2: "player2", 3: "player3", 4: "player4", 5: "player5"}
 pos_to_num = {"player1": 1, "player2": 2, "player3": 3, "player4": 4, "player5": 5}
@@ -10,9 +10,7 @@ pos_to_num = {"player1": 1, "player2": 2, "player3": 3, "player4": 4, "player5":
 def shooting(player, team): 
 
     shot_location = random.randint(0,45)
-    print (shot_location)
     shot_location_chance = random.uniform(0,1)
-    print (shot_location_chance)
     result = None 
 
     if shot_location <= 5:
@@ -157,24 +155,24 @@ def run_possession(possessing_team, clock):
     possessing_player = possessing_team.teamlineup[player_name]
     res = None
     while passes < 5:
-        use_val = 0.0
+        use_val = random.uniform(0,1)
         if use_val < possessing_player.usage:
             res = shooting(possessing_player, possessing_team)
             break
         else:
-            print("i am here")
             new_player_pos =possessing_team.getRandomPlayer()
+
             possessing_player = possessing_team.teamlineup[new_player_pos]
             passes += 1
     #hero ball time
     if passes == 5:
-        use_val = round(random.random()*100)
+        use_val = random.uniform(0,1)
         if use_val < (possessing_player.usage+10):
             res = shooting(possessing_player, possessing_team)
-        elif use_val < 70:
+        elif use_val < .70:
             #These are tough 50/50 calls in the lane from hero-baller charging down it
-            foul_val = round(random.random()*100)
-            if foul_val < 50:
+            foul_val = random.uniform(0,1)
+            if foul_val < .50:
                 possessing_player.stats.turnovers += 1
                 possessing_player.stats.fouls += 1
                 possessing_team = possessing_team.opponent
