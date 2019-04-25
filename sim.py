@@ -133,25 +133,23 @@ def free_throw_sequence(player, team, event_type = None):
     return controlling_team
 
 
-def rebounding_sequence(team):
-    rebound_val = random.uniform(0,1)
+def rebounding_sequence(team,team2):
     
-    if rebound_val <= 0:
-       ## team.teamlineup[rebounding_pos].stats.oreb += 1
-        res = "oreb"
-    else:
-        ##team.opponent.teamlineup[rebounding_pos].stats.dreb += 1
-        res = "dreb"
-    return res
+    playerName1 = team.getRandomPlayer()
+    playerName2 = team.getRandomPlayer()
+    possessing_player = team.teamlineup[playerName1]
+    opponent_player = team2.teamlineup[playerName2]
+
+    print (possessing_player.REB,opponent_player.REB)
 
 
-def run_possession(possessing_team, clock):
+def run_possession(possessing_team,non_possessing_team, clock):
     passes = 1
     print(possessing_team.name)
     player_name = possessing_team.getPlayerWithHighestUsgPercentage()
     possessing_player = possessing_team.teamlineup[player_name]
     res = None
-    while passes < 5:
+    while passes < 4:
         use_val = random.uniform(0,1)
         if use_val < possessing_player.usage:
             res = shooting(possessing_player, possessing_team)
@@ -162,7 +160,7 @@ def run_possession(possessing_team, clock):
             possessing_player = possessing_team.teamlineup[new_player_pos]
             passes += 1
     #hero ball time
-    if passes == 5:
+    if passes == 4:
         use_val = random.uniform(0,1)
         if use_val < (possessing_player.usage+10):
             res = shooting(possessing_player, possessing_team)
@@ -172,7 +170,9 @@ def run_possession(possessing_team, clock):
             if foul_val < .50:
                 possessing_player.stats.turnovers += 1
                 possessing_player.stats.fouls += 1
-                possessing_team = possessing_team.opponent
+                temp = possessing_team
+                possessing_team = non_possessing_team
+                non_possessing_team = temp
                 possessing_team.fouls += 1
             else:
                 possessing_team.opponent.fouls += 1
@@ -183,24 +183,30 @@ def run_possession(possessing_team, clock):
         else:
             #turnover
             possessing_player.stats.turnovers += 1
-            possessing_team = possessing_team.opponent
+            temp = possessing_team
+            possessing_team = non_possessing_team
+            non_possessing_team = temp
    #resolve the make or miss if there was a shot
     if res != None:
         if res == "make":
-            possessing_team = possessing_team.opponent
+                temp = possessing_team
+                possessing_team = non_possessing_team
+                non_possessing_team = temp
         elif res == "miss":
-            reb_res = rebounding_sequence(possessing_team)
+            reb_res = rebounding_sequence(possessing_team, non_possessing_team)
             if reb_res == "oreb":
                 pass
             elif reb_res == "dreb":
-                possessing_team = possessing_team.opponent
+                temp = possessing_team
+                possessing_team = non_possessing_team
+                non_possessing_team = temp
             else:
                 print ("Received unknown rebound resolution")
         else:
             print ("Received unknown resolution")
     #resolve the clock
     clock -= passes * 5
-    return possessing_team, clock
+    return possessing_team,non_possessing_team, clock
 
 
 
@@ -284,19 +290,22 @@ make_Team2players_from_data(away, team2SG, "player_data.csv")
 #print away.lineup
 
 possessing_team = None
+non_possessing_team = None 
 quarter = 1
 
 #jump ball
 jump_val = random.random()
 if jump_val > 0.50:
     possessing_team = away
+    non_possessing_team = home
 else:
     possessing_team = home
+    non_possessing_team= away
 
 while quarter < 5:
     clock_seconds = 720
     while clock_seconds > 0:
-        possessing_team, clock_seconds = run_possession(possessing_team, clock_seconds)
+        (possessing_team,non_possessing_team, clock_seconds) = run_possession(possessing_team,non_possessing_team, clock_seconds)
     home.fouls = 0
     away.fouls = 0
     home.quarter_points = home.points - home.running_points

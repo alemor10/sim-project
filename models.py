@@ -1,4 +1,5 @@
 import random 
+from random import randint
 
 
 class Team: 
@@ -28,11 +29,11 @@ class Team:
     def getPlayerWithHighestREBPercentage(self):
         max_REB = 0.0 
         player_name = None 
+        player = randint(0,5)
         for k in self.teamlineup.keys():
-            p = self.teamlineup[k]
-            if (p.REB >max_REB):
-                max_REB = p.REB
-                player_name= p.name
+            p = self.teamlineup[player]
+            max_REB = p.REB
+            player_name= p.name
         return (player_name, max_REB)
 
 
