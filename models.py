@@ -36,6 +36,13 @@ class Team:
             player_name= p.name
         return (player_name, max_REB)
 
+    def getPlayerRebPct (self, name): 
+        playerREBPct = 0.0
+        p = self.teamlineup[name]
+        playerREBPct = p.REB
+        return playerREBPct
+
+
 
 class GameStats: 
     def __init__(self):
@@ -65,6 +72,8 @@ class Player:
         self.position = None
         self.usage = 0.0
         self.REB = 0.0
+        self.offensiveREBpct = 0.0
+        self.defensiveREBpct = 0.0
         self.less_than_5ft_shot_pct  = 0.0
         self.less_than_5ft_to_9ft_shot_pct  = 0.0
         self.less_than_10ft_to_14ft_shot_pct  = 0.0

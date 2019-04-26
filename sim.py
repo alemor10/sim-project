@@ -3,20 +3,18 @@ import csv
 import getshots
 from  models import *
 
-pos_to_player = {1: "player1", 2: "player2", 3: "player3", 4: "player4", 5: "player5"}
-pos_to_num = {"player1": 1, "player2": 2, "player3": 3, "player4": 4, "player5": 5}
 
 
 def shooting(player, team): 
 
     shot_location = random.choice(player.shot_distances)
-    print (shot_location)
+    ##print ("shot location", shot_location)
     
     result = None 
 
     if shot_location <= 5:
         shot_made = True if random.randrange(100) <= player.less_than_5ft_shot_pct *100 else False
-        print('pct', player.less_than_5ft_shot_pct)
+        ##print('pct', player.less_than_5ft_shot_pct)
         if shot_made:
             team.points +=2
             player.stats.points +=2
@@ -26,7 +24,7 @@ def shooting(player, team):
         else:
             player.stats.two_point_attmpt += 1 
             result = "miss"   
-        print(result)
+        ###print(result)
 
     elif shot_location <= 9 and shot_location > 5: 
         shot_made = True if random.randrange(100) <= player.less_than_5ft_to_9ft_shot_pct *100 else False
@@ -136,24 +134,24 @@ def shooting(player, team):
             result = "miss"        
     return result
 
-def freethrow_rebounding_sequence(player, team):
-    rebound_val = round(random.random()*100)
-    rebound_range = [1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
-    player_num = pos_to_num[player.position]
-    offensive_rebound_range = rebound_range.remove(player_num)
-    if rebound_val < 14:
-        rebounder = random.choice(offensive_rebound_range)
-        rebounding_pos = pos_to_player[rebounder]
-        team.teamlineup[rebounding_pos].stats.oreb += 1
-        controlling_team = team
-    else:
-        rebounder = random.choice(rebound_range)
-        rebounding_pos = pos_to_player[rebounder]
-        team.opponent.teamlineup[rebounding_pos].stats.dreb += 1
-        controlling_team = team.opponent
-    return controlling_team
+def freethrow_rebounding_sequence(player,possessing_team,non_possessing_team ):
 
-def free_throw_sequence(player, team, event_type = None):
+
+    playerName1 = possessing_team.getRandomPlayer()
+    playerName2 = non_possessing_team.getRandomPlayer()
+    player1REB = possessing_team.teamlineup[playerName1].offensiveREBpct 
+    player2Reb = non_possessing_team.teamlineup[playerName2].defensiveREBpct 
+    if (player1REB > player2Reb): 
+        possessing_team.teamlineup[playerName1].stats.offensive_reb +=1
+        controlling_team = possessing_team
+    else: 
+        non_possessing_team.teamlineup[playerName2].stats.defensive_reb +=1
+        controlling_team = non_possessing_team
+    
+    return controlling_team
+   
+
+def free_throw_sequence(player, possessing_team, non_possessing_team,event_type = None):
     shots = 0
     if event_type == "2pt":
         total_shots = 2
@@ -166,59 +164,69 @@ def free_throw_sequence(player, team, event_type = None):
     while total_shots > shots:
         shot_chance_val = round(random.random()*100)
         if shot_chance_val > player.freethrow_pct:
-            team.points += 1
+            possessing_team.points += 1
             player.stats.free_throw_attmpt += 1
             player.stats.free_throws += 1
             shots += 1
             if shots == total_shots:
-                controlling_team = team.opponent
+                controlling_team = non_possessing_team
             else:
                 pass
         else:
             player.stats.free_throw_attmpt += 1
             shots += 1
             if shots == total_shots:
-                controlling_team = freethrow_rebounding_sequence(player, team)
+                controlling_team = freethrow_rebounding_sequence(player, possessing_team, non_possessing_team)
             else:
                 pass
     return controlling_team
 
 
-def rebounding_sequence(team,team2):
+def rebounding_sequence(possessing_team,non_possessing_team):
     
-    playerName1 = team.getRandomPlayer()
-    playerName2 = team.getRandomPlayer()
-    possessing_player = team.teamlineup[playerName1]
-    opponent_player = team2.teamlineup[playerName2]
+    playerName1 = possessing_team.getRandomPlayer()
+    playerName2 = non_possessing_team.getRandomPlayer()
+    player1REB = possessing_team.teamlineup[playerName1].offensiveREBpct + possessing_team.teamlineup[playerName1].REB
+    player2Reb = non_possessing_team.teamlineup[playerName2].defensiveREBpct + non_possessing_team.teamlineup[playerName2].REB
+    ##print ("offensive reb rate ",player1REB, "defensive reb rate ", player2Reb)
 
-    print (possessing_player.REB,opponent_player.REB)
+
+    if (player1REB > player2Reb): 
+        possessing_team.teamlineup[playerName1].stats.offensive_reb +=1
+        res = "oreb"
+    else: 
+        non_possessing_team.teamlineup[playerName2].stats.defensive_reb +=1
+        res = "dreb"
+  
+    return res
+ 
 
 
 def run_possession(possessing_team,non_possessing_team, clock):
     passes = 1
-    print(possessing_team.name)
+    ##print(possessing_team.name)
     player_name = possessing_team.getPlayerWithHighestUsgPercentage()
     possessing_player = possessing_team.teamlineup[player_name]
+    
     res = None
-    while passes < 4:
+    while passes < 5:
         use_val = random.uniform(0,1)
         if use_val < possessing_player.usage:
             res = shooting(possessing_player, possessing_team)
             break
         else:
             new_player_pos =possessing_team.getRandomPlayer()
-
             possessing_player = possessing_team.teamlineup[new_player_pos]
             passes += 1
     #hero ball time
-    if passes == 4:
+    if passes == 5:
         use_val = random.uniform(0,1)
-        if use_val < (possessing_player.usage+10):
+        if use_val < (possessing_player.usage):
             res = shooting(possessing_player, possessing_team)
-        elif use_val < .70:
+        elif use_val < .50:
             #These are tough 50/50 calls in the lane from hero-baller charging down it
             foul_val = random.uniform(0,1)
-            if foul_val < .50:
+            if foul_val < .40:
                 possessing_player.stats.turnovers += 1
                 possessing_player.stats.fouls += 1
                 temp = possessing_team
@@ -228,7 +236,8 @@ def run_possession(possessing_team,non_possessing_team, clock):
             else:
                 possessing_team.opponent.fouls += 1
                 if possessing_team.opponent.fouls > 4:
-                    possessing_team = free_throw_sequence(possessing_player, possessing_team)
+                    print("hello")
+                    possessing_team = free_throw_sequence(possessing_player, possessing_team, non_possessing_team)
                 else:
                     pass
         else:
@@ -303,6 +312,9 @@ def make_Team1players_from_data(team,playerID, path):
             p = Player()
             p.name, p.position = r[1], r[2]
             p.usage = float(r[3])
+            p.REB = float(r[5])
+            p.defensiveREBpct = float(r[7])
+            p.offensiveREBpct = float (r[6])
             p.less_than_5ft_shot_pct = float(r[8])
             p.less_than_5ft_to_9ft_shot_pct = float(r[9])
             p.less_than_10ft_to_14ft_shot_pct = float(r[10])
@@ -326,6 +338,9 @@ def make_Team2players_from_data(team, playerID, path):
             p = Player()
             p.name,  p.position = r[1], r[2]
             p.usage = float(r[3])
+            p.REB = float(r[5])
+            p.defensiveREBpct = float(r[7])
+            p.offensiveREBpct = float (r[6])
             p.less_than_5ft_shot_pct = float(r[8])
             p.less_than_5ft_to_9ft_shot_pct = float(r[9])
             p.less_than_10ft_to_14ft_shot_pct = float(r[10])
@@ -354,9 +369,6 @@ make_Team2players_from_data(away, team2PG, "player_data.csv")
 make_Team2players_from_data(away, team2SG, "player_data.csv")
 
 
-
-#print home.lineup
-#print away.lineup
 
 possessing_team = None
 non_possessing_team = None 
